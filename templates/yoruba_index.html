@@ -1,0 +1,752 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=yes">
+    <title>MyAIFactChecker</title>
+    <meta name="description" content="AI Fact Checker for verifying information." />
+    <meta name="keywords" content="AI Fact Checker, fact verification, AI tool for verifying information, online fact checker" />
+    <meta name="description" content="AI Fact Checker for verifying information, a reliable tool for fact verification." />
+    <meta name="keywords" content="AI Fact Checker, fact verification, AI tool for verifying information, online fact checker" />
+    <meta name="abstract" content="AI Fact Checker for verifying information, a reliable tool for fact verification.">
+  
+    
+    <!-- BEGIN GLOBAL MANDATORY STYLES -->
+    <link href="https://fonts.googleapis.com/css?family=Nunito:400,600,700" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
+    <!-- END GLOBAL MANDATORY STYLES -->
+    
+    <link rel="stylesheet" type="text/css" href="{% static 'css/select2.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/chatBot.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/timeline.css' %}">
+
+    <link rel="stylesheet" href="{% static 'output.css' %}">
+    <link rel="stylesheet" href="{% static 'w3.css' %}">
+    <style>
+        /* Style for the chat icon */
+        #chat-icon {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            cursor: pointer;
+        }
+
+    #chat-messages {
+    max-height: 200px; /* Adjust the maximum height as needed */
+    overflow-y: auto;
+    scrollbar-width: thin; /* Firefox */
+    scrollbar-color: transparent transparent; /* Firefox */
+    -ms-overflow-style: none; /* Internet Explorer and Microsoft Edge */
+}
+
+#chat-messages::-webkit-scrollbar {
+    width: 0.5em; /* Chrome, Safari, Opera */
+    max-height: 100px;
+}
+
+#chat-messages::-webkit-scrollbar-thumb {
+    background-color: transparent; /* Chrome, Safari, Opera */
+}
+
+/* Media Query for Mobile Devices */
+@media (max-width: 480px) {
+  .hidden-mobile {
+    display: none;
+  }
+}
+
+/* Media Query for low-resolution Tablets, iPads */
+@media (min-width: 481px) and (max-width: 767px) {
+  .hidden-low-res-tablet {
+    display: none;
+  }
+}
+
+/* Media Query for Tablets, iPads in portrait mode */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .hidden-tablet-portrait {
+    display: none;
+  }
+}
+
+/* Media Query for Laptops and Desktops */
+@media (min-width: 1025px) and (max-width: 1280px) {
+  .hidden-laptop-desktop {
+    display: none;
+  }
+}
+
+/* Media Query for Large screens */
+@media (min-width: 1281px) {
+  .hidden-large-screen {
+    display: none;
+  }
+}
+
+        
+    </style>
+    <script async src="https://w.appzi.io/w.js?token=Izmwg"></script>
+       <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-LV60YZP3W4"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-LV60YZP3W4');
+</script>
+</head>
+<body>
+
+ 
+ <header class="fixed w-full">
+     <nav class="bg-white border-gray-200 py-2.5 dark:bg-gray-900">
+         <div class="flex flex-wrap items-center justify-between max-w-screen-xl px-4 mx-auto">
+            
+             <a href="/" class="flex items-center">
+                 <img src=" {% static '/images/Factcheck_Elections.png' %}" class="h-6 mr-3 sm:h-9" alt="Landwind Logo" />
+             </a>
+
+             <div class="flex items-center lg:order-2">
+
+                <div class="w3-dropdown-hover hidden-mobile hidden-low-res-tablet hidden-tablet-portrait">
+                    <button class="w3-button w3-teal text-white bg-purple-700 hover:bg-purple-800 focus:ring-4 focus:ring-purple-300 font-medium rounded-lg text-sm px-4 lg:px-5 py-2 lg:py-2.5 sm:mr-2 lg:mr-0 dark:bg-purple-600 dark:hover:bg-purple-700 focus:outline-none dark:focus:ring-purple-800">Ede</button>
+                    <div class="w3-dropdown-content w3-bar-block w3-border">
+                      <a href="/hausa" class="w3-bar-item w3-button">Hausa</a>
+                      <a href="/yoruba" class="w3-bar-item w3-button">Yoruba</a>
+                      <a href="/igbo" class="w3-bar-item w3-button">Igbo</a>
+                      <a href="/french" class="w3-bar-item w3-button">French</a>
+                      <a href="/swahili" class="w3-bar-item w3-button">Swahili</a>
+                      <a href="/arabic" class="w3-bar-item w3-button">Arabic</a>
+                      <a href="/" class="w3-bar-item w3-button">English</a>
+                    </div>
+                  </div>
+                 <button data-collapse-toggle="mobile-menu-2" type="button" class="inline-flex items-center p-2 ml-1 text-sm text-gray-500 rounded-lg lg:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600" aria-controls="mobile-menu-2" aria-expanded="false">
+                     <span class="sr-only">Open main menu</span>
+                     <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"></path></svg>
+                     <svg class="hidden w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                 </button>
+             </div>
+             <div class="items-center justify-between hidden w-full lg:flex lg:w-auto lg:order-1" id="mobile-menu-2">
+                 <ul class="flex flex-col mt-4 font-medium lg:flex-row lg:space-x-8 lg:mt-0">
+                     <li>
+                         <a href="/yoruba" class="block py-2 pl-3 pr-4 text-gray-700 border-b border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-purple-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700">Ile</a>
+                     </li>
+                     <li>
+                         <a href="/yoruba/about" class="block py-2 pl-3 pr-4 text-gray-700 border-b border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-purple-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700">Nipa</a>
+                     </li>
+
+                     <li>
+                         <a href="#c1" class="block py-2 pl-3 pr-4 text-gray-700 border-b border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-purple-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700">Olubasọrọ</a>
+                     </li>
+
+                     <li>
+                         <a href="#how" class="block py-2 pl-3 pr-4 text-gray-700 border-b border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-purple-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700">Bawo ni lati Lo</a>
+                     </li>
+                    
+                     <li class="hidden-large-screen hidden-laptop-desktop">
+                        <!-- Dropdown menu item -->
+                        <div class="w3-dropdown-hover">
+                            <button class="w3-button  text-white bg-purple-700 hover:bg-purple-800 focus:ring-4 focus:ring-purple-300 font-medium rounded-lg text-sm px-4 lg:px-5 py-2 lg:py-2.5 sm:mr-2 lg:mr-0 dark:bg-purple-600 dark:hover:bg-purple-700 focus:outline-none dark:focus:ring-purple-800">Ede</button>
+                            <div class="w3-dropdown-content w3-bar-block w3-border">
+                                <a href="/hausa" class="w3-bar-item w3-button">Hausa</a>
+                                <a href="/yoruba" class="w3-bar-item w3-button">Yoruba</a>
+                                <a href="/igbo" class="w3-bar-item w3-button">Igbo</a>
+                                <a href="/french" class="w3-bar-item w3-button">French</a>
+                                <a href="/swahili" class="w3-bar-item w3-button">Swahili</a>
+                                <a href="/arabic" class="w3-bar-item w3-button">Arabic</a>
+                                <a href="/" class="w3-bar-item w3-button">English</a>
+                            </div>
+                        </div>
+                    </li>
+                 </ul>
+             </div>
+         </div>
+     </nav>
+ </header>
+
+<br>
+
+<!-- Large screens -->
+<section style="margin: auto;" class="bg-white dark:bg-gray-900 lg:px-6 hidden-section hidden-mobile hidden-low-res-tablet hidden-tablet-portrait hidden-lg">
+        <div class="grid max-w-screen-xl px-4 pt-20 pb-8 mx-auto lg:gap-8 xl:gap-0 lg:py-16 lg:grid-cols-12 lg:pt-28">
+            <div class="mr-auto place-self-center lg:col-span-7 ">
+                <h1 class="max-w-2xl mb-4 text-4xl  leading-none tracking-tight md:text-5xl xl:text-6xl dark:text-white">Meet <span style="color: teal;">MyAIFActChecker</span><br>Irohin ti ara ẹni<br>Ajẹri</h1>
+                
+                <div class="space-y-4  sm:flex sm:space-y-0 sm:space-x-4">
+                    <a href="/yoruba/factcheck" class="w3-teal inline-flex items-center justify-center w-full px-5 py-3 text-sm font-medium text-center text-gray-900 border border-gray-200 rounded-lg sm:w-auto hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 dark:text-white dark:border-gray-700 dark:hover:bg-gray-700 dark:focus:ring-gray-800">
+                        Ṣayẹwo otitọ
+                    </a> 
+
+                </div>
+            </div>
+            <div class="lg:mt-0 lg:col-span-5 lg:flex lg:px-12">
+                <img src="{% static 'images/factcheck.png' %}" alt="hero image">
+            </div>                
+        </div>
+    </section>
+    <!-- End block -->
+
+      
+  
+<!-- Mobile Devices -->
+<section style="margin: auto;" class="w3-center bg-white dark:bg-gray-900  hidden-section hidden-laptop-desktop hidden-large-screen hidden-low-res-tablet hidden-tablet-portrait hidden-laptop-desktop">
+    <!-- 'hidden-sm' is a custom class for hiding on small screens -->
+    <div class="grid max-w-screen-xl px-4 pt-20 pb-8 mx-auto lg:gap-8 xl:gap-0 lg:py-16 lg:grid-cols-12">
+        <div class="lg:mt-0 lg:col-span-5 lg:flex lg:px-12">
+            <img src="{% static 'images/factcheck.png' %}" alt="hero image">
+        </div> 
+        
+        <div class="mr-auto place-self-center lg:col-span-7 " style="padding-left:20px ;">
+            <h1 class="max-w-2xl mb-4 text-4xl leading-none tracking-tight md:text-5xl xl:text-6xl dark:text-white">Pade <span style="color: teal;">MyAIFActChecker</span><br>Irohin ti ara ẹni<br>Ajẹri</h1>
+            
+            <div class="space-y-4 sm:flex sm:space-y-0">
+                <a href="/yoruba/factcheck" class="w3-teal inline-flex items-center justify-center w-full px-5 py-3 text-sm font-medium text-center text-gray-900 border border-gray-200 rounded-lg sm:w-auto hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 dark:text-white dark:border-gray-700 dark:hover:bg-gray-700 dark:focus:ring-gray-800">
+                    Ṣayẹwo otitọ
+                </a> 
+            </div>
+        </div>
+               
+    </div>
+</section>
+
+  
+<!-- Low-resolution Tablets, iPads -->
+<section style="margin: auto;" class="bg-white dark:bg-gray-900 lg:px-6 visible-section-low-res-tablet hidden-section hidden-laptop-desktop hidden-large-screen hidden-mobile hidden-tablet-portrait hidden-laptop-desktop">
+    <!-- 'hidden-sm' is a custom class for hiding on small screens -->
+    <div class="grid max-w-screen-xl px-4 pt-20 pb-8 mx-auto lg:gap-8 xl:gap-0 lg:py-16 lg:grid-cols-12 lg:pt-28">
+       
+        <div class="lg:mt-0 lg:col-span-5 lg:flex lg:px-12">
+            <img src="{% static 'images/factcheck.png' %}" alt="hero image">
+        </div> 
+
+        <div class="mr-auto place-self-center lg:col-span-7 ">
+            <h1 class="max-w-2xl mb-4 text-4xl leading-none tracking-tight md:text-5xl xl:text-6xl dark:text-white">Pade <span style="color: teal;">MyAIFActChecker</span><br>Irohin ti ara ẹni<br>Ajẹri</h1>
+            
+            <div class="space-y-4 sm:flex sm:space-y-0 sm:space-x-4">
+                <a href="/yoruba/factcheck" class="w3-teal inline-flex items-center justify-center w-full px-5 py-3 text-sm font-medium text-center text-gray-900 border border-gray-200 rounded-lg sm:w-auto hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 dark:text-white dark:border-gray-700 dark:hover:bg-gray-700 dark:focus:ring-gray-800">
+                    Ṣayẹwo otitọ
+                </a> 
+            </div>
+        </div>
+                      
+    </div>
+</section>
+
+<!-- Tablets, iPads in portrait mode -->
+<section style="margin: auto;" class="bg-white dark:bg-gray-900 lg:px-6 hidden-section hidden-laptop-desktop hidden-large-screen hidden-mobile hidden-lg hidden-low-res-tablet hidden-laptop-desktop">
+    <!-- 'hidden-sm' is a custom class for hiding on small screens -->
+    <div class="grid max-w-screen-xl px-4 pt-20 pb-8 mx-auto lg:gap-8 xl:gap-0 lg:py-16 lg:grid-cols-12 lg:pt-28">
+       
+        <div class="lg:mt-0 lg:col-span-5 lg:flex lg:px-12">
+            <img src="{% static 'images/factcheck.png' %}" width="90%" alt="hero image">
+        </div> 
+
+        <div class="w3-center mr-auto place-self-center lg:col-span-7" style="margin: auto;">
+            <h1 class="max-w-2xl mb-4 text-4xl leading-none tracking-tight md:text-5xl xl:text-6xl dark:text-white">Pade <span style="color: teal;">MyAIFActChecker</span><br>Irohin ti ara ẹni<br>Ajẹri</h1>
+            
+            <div class="space-y-4" style="margin: auto;">
+                <a href="/yoruba/factcheck" class="w3-teal inline-flex items-center justify-center w-full px-5 py-3 text-sm font-medium text-center text-gray-900 border border-gray-200 rounded-lg sm:w-auto hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 dark:text-white dark:border-gray-700 dark:hover:bg-gray-700 dark:focus:ring-gray-800">
+                    Ṣayẹwo otitọ
+                </a> 
+            </div>
+        </div>
+                      
+    </div>
+</section>
+
+
+
+
+    <!-- Start block -->
+    <section class="bg-white dark:bg-gray-900" id="how">
+        <div class="max-w-screen-xl px-4 py-8 mx-auto lg:py-24 lg:px-6">
+            <div class="max-w-screen-md mx-auto mb-8 text-center lg:mb-12">
+                <h2 class="mb-4 text-3xl font-bold tracking-tight text-gray-900 dark:text-white">Awọn Igbesẹ Rọrun 3 lati lo MyAIFActChecker</h2>
+                <p class="mb-5 font-light text-gray-500 sm:text-xl dark:text-gray-400">MyAIFActChecker pese fun ọ pẹlu awọn irinṣẹ to lagbara lati ṣe iranlọwọ fun ọ lati rii daju ododo ti awọn iroyin ati awọn alaye ni iyara ati irọrun.</p>
+            </div>
+           <div class="space-y-8 lg:grid lg:grid-cols-3 sm:gap-6 xl:gap-10 lg:space-y-0">
+                <!-- Pricing Card -->
+               <div style="background-color: antiquewhite;" class="flex flex-col max-w-lg p-6 mx-auto text-center text-gray-900 border border-gray-100 rounded-lg shadow dark:border-gray-600 xl:p-8 dark:bg-gray-800 dark:text-white">
+    <h3 class="mb-4 text-2xl font-semibold">Tẹ rẹ News Abala</h3>
+
+    <!-- List -->
+    <ul role="list" class="mb-8 space-y-4 text-left">
+        <li class="flex items-center space-x-3">
+            <!-- Icon -->
+            <svg class="flex-shrink-0 w-5 h-5 text-green-500 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
+            <span>Lori oju-iwe akọkọ, iwọ yoo wa apoti ọrọ kan. Tẹ nkan iroyin ti o fẹ lati ṣayẹwo otitọ sinu apoti ọrọ.</span>
+        </li>
+    </ul>
+</div>
+
+ <!-- Pricing Card -->
+<div style="background-color: rgb(131, 231, 198);"  class="flex flex-col max-w-lg p-6 mx-auto text-center text-gray-900  border border-gray-100 rounded-lg shadow dark:border-gray-600 xl:p-8 dark:bg-gray-800 dark:text-white">
+                    <h3 class="mb-4 text-2xl font-semibold">Click "Check Authenticity"</h3>
+                   
+                    <!-- List -->
+                    <ul role="list" class="mb-8 space-y-4 text-left">
+                        <li class="flex items-center space-x-3">
+                            <!-- Icon -->
+                            <svg class="flex-shrink-0 w-5 h-5 text-green-500 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
+                            <span>Lẹhin titẹ nkan iroyin, tẹ bọtini “Ṣayẹwo ododo”. app rẹ yoo ṣe itupalẹ nkan naa yoo fun ọ ni awọn abajade.</span>
+                        </li>
+
+                    </ul>
+                   
+                </div>
+
+<!-- Pricing Card -->
+<div style="background-color:LightPink" class="flex flex-col max-w-lg p-6 mx-auto text-center text-gray-900  border border-gray-100 rounded-lg shadow dark:border-gray-600 xl:p-8 dark:bg-gray-800 dark:text-white">
+                    <h3 class="mb-4 text-2xl font-semibold">Ṣe ayẹwo Abajade naa</h3>                  
+                 
+                    <!-- List -->
+                    <ul role="list" class="mb-8 space-y-4 text-left">
+                        <li class="flex items-center space-x-3">
+                            <!-- Icon -->
+                            <svg class="flex-shrink-0 w-5 h-5 text-green-500 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
+                            <span>Ni kete ti itupalẹ ba ti pari, iwọ yoo rii Oluṣeto ti awọn iroyin, awọn abajade ṣiṣe ayẹwo-otitọ, ati alaye diẹ sii nipa awọn orisun igbẹkẹle.</span>
+                        </li>
+
+                    </ul>
+                   
+                </div>
+            </div>
+        </div>
+      </section>
+    <!-- End block -->
+
+
+
+
+    <section class="bg-white dark:bg-gray-900" id="c1">
+        <div class="py-8 lg:py-16 px-4 mx-auto max-w-screen-md">
+            <h2 class="mb-4 text-4xl tracking-tight font-extrabold text-center text-gray-900 dark:text-white">Kan si wa</h2>
+            <p class="mb-8 lg:mb-16 font-light text-center text-gray-500 dark:text-gray-400 sm:text-xl">Boya o ni awọn ibeere nipa ilana ṣiṣe ayẹwo otitọ wa, pade awọn ọran imọ-ẹrọ, tabi fẹ lati pese esi, a wa nibi lati ṣe iranlọwọ. Fọwọsi fọọmu ni isalẹ, ati pe a yoo pada wa si ọ ni kete bi o ti ṣee.</p>
+            <form action="/" class="space-y-8" >
+                <div>
+                    <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300">Imeeli rẹ</label>
+                    <input type="email" id="email" class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500 dark:shadow-sm-light" placeholder="name@gmail.com" required>
+                </div>
+                <div>
+                    <label for="subject" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300">Koko-ọrọ</label>
+                    <input type="text" id="subject" class="block p-3 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 shadow-sm focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500 dark:shadow-sm-light" placeholder="Jẹ ki a mọ bi a ṣe le ran ọ lọwọ" required>
+                </div>
+                <div class="sm:col-span-2">
+                    <label for="message" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-400">Ifiranṣẹ rẹ</label>
+                    <textarea id="message" rows="6" class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg shadow-sm border border-gray-300 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Fi ọrọìwòye..."></textarea>
+                </div>
+               
+                <div class="max-w-screen-md mx-auto mb-8 text-center lg:mb-12">
+       
+                    <p class="mb-5 font-light text-gray-500 sm:text-xl dark:text-gray-400">
+                       
+                    <button type="submit" class="w3-teal py-3 px-5 text-sm font-medium text-center text-white rounded-lg bg-primary-700 sm:w-fit hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">Send message</button>
+              
+                        
+                    </p>
+                    
+                </div>
+            </form>
+        </div>
+      </section>
+
+    
+<!-- Chat bot UI start -->
+<div class="chat-screen">
+    <div class="chat-header">
+        <div class="chat-header-title w3-center">
+            Welcome to Our AI Powered chatbot
+        </div>
+        <div class="chat-header-option hide">
+            <span class="dropdown custom-dropdown">
+                <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-more-horizontal"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
+                </a>
+                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuLink1" style="will-change: transform;">
+                
+                    <a class="dropdown-item end-chat" href="/">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#bc32ef" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-power"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>
+                        End Chat
+                    </a>
+                </div>
+            </span>
+        </div>
+    </div>
+    <div class="chat-mail">
+        <div class="row">
+            <div class="col-md-12 text-center mb-2">
+                <p>Hi 👋! Enter you Name to access our chatbot</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group">
+                    <input type="text" class="form-control" id="nameInput" placeholder="Name" required>
+                </div>
+            </div>
+            <!-- <div class="col-md-12">
+                <div class="form-group">
+                    <input type="email" class="form-control" placeholder="Email">
+                </div>
+            </div> -->
+            <div class="col-md-12">
+                <select class="form-control select2_el" id="optionSelect" required>
+                    <option selected="selected" disabled="disabled" value="">Select Option</option>
+                    <option>Report Misinformation</option>
+                    <option>FactCheck</option>
+                </select>
+            </div>
+            <div class="col-md-12">
+                <button class="btn btn-primary btn-rounded btn-block" id="startChatBtn" disabled>Start Chat</button>
+            </div>
+            
+           <div class="col-md-12">
+               <div class="powered-by">Powered by MYAIFactChecker</div>
+           </div>
+        </div>
+
+
+
+    </div>
+    <div class="chat-body hide">
+        <div class="first-message">
+        <div class="chat-start">Monday, 1:27 PM</div>
+        <div class="chat-bubble you">Hello, How can I assist you today?</div>
+    </div>
+        <div class="col-md-12" id="reportFormContainer" style="display: none;">
+            <form id="reportForm">
+                {% csrf_token %}
+                <label for="name">Report Type</label>
+                <input class="w3-input w3-border w3-round-xxlarge w3-padding" type="text" id="name" name="name" required>
+            <br>
+                <label for="message">Message</label>
+                <textarea class="w3-input w3-border w3-round" rows="7" id="message" name="message" required></textarea>
+            <div class="w3-container w3-center w3-padding">
+                <button class="w3-button w3-purple w3-round-xlarge" type="submit" width="50%">Submit</button>
+            </div>
+                
+            </form>
+            <div id="successMessage"></div>
+        </div>
+
+        <div  id="chat-messages">
+            <!-- Messages will be added here dynamically -->
+        </div>
+    </div>
+    <div class="chat-input hide" style="padding-top:0px;">
+            
+        <input id="user-input" class="w3-border-purple  flex items-center h-15 w-full w3-round-xxlarge px-3 text-sm" style="border:2px solid" type="text" placeholder="Type your message…">
+    
+        <input type="hidden" id="hiddenInput" name="hiddenInput" value="unused">
+
+        <div class="input-action-icon">
+            
+            <button id="send-btn" ><img src="{% static '/images/paper.png' %}" alt="Voice Icon" style="padding-bottom: 12px;" class="w-8 h-10" ></button>
+            <button id="speechChatButton" type="button" onclick="startChatSpeechRecognition()"><img src="{% static '/images/voice.png' %}" alt="Voice Icon" style="padding-bottom: 12px;padding-right: 10px;" class="w-10 h-10" ></button>
+          
+        </div>
+       
+    </div>
+
+
+</div>
+<div class="chat-bot-icon">
+
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-message-square animate"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x "><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+<script>
+    // JavaScript code to get the current day
+    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const currentDate = new Date();
+    const currentDay = days[currentDate.getDay()];
+    const currentTime = currentDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const dayTimeElement = document.getElementById('day-time');
+    dayTimeElement.textContent = `${currentDay}, ${currentTime}`;
+</script>
+
+
+<script>
+            $(document).ready(function () {
+            // Function to check if the input fields are valid
+            function checkFormValidity() {
+                var name = $("#nameInput").val();
+                var option = $("#optionSelect").val();
+
+                // Enable the button only if both name and option are filled
+                if (name && option) {
+                    $("#startChatBtn").prop("disabled", false);
+
+                    // Show/hide the reporting form container based on the selected option
+                    if (option === "Report Misinformation") {
+                        $("#reportFormContainer").show();
+                        // Hide both the specific chat input and first message sections when reporting misinformation
+                        $(".chat-input, .first-message").hide();
+                        // Change the header message when reporting misinformation
+                        $(".chat-header-title").text("Report Your Complaint or Fake News");
+                    } else {
+                        $("#reportFormContainer").hide();
+                        // Show both the specific chat input and first message sections when not reporting misinformation
+                        $(".chat-input, .first-message").show();
+                        // Restore the original header message when not reporting misinformation
+                        $(".chat-header-title").text("Welcome to Our AI Powered Chatbot");
+                    }
+                } else {
+                    $("#startChatBtn").prop("disabled", true);
+                    $("#reportFormContainer").hide();
+                    // Restore the original header message when the option is not selected
+                    $(".chat-header-title").text("Welcome to Our AI Powered Chatbot");
+                }
+            }
+
+            // Call the function when the input fields change
+            $("#nameInput, #optionSelect").on("input change", function () {
+                checkFormValidity();
+            });
+
+            // Call the function initially to set the initial state of the button and form container
+            checkFormValidity();
+
+
+        // AJAX for form submission
+        $("#reportForm").submit(function (event) {
+            event.preventDefault();  // Prevent the default form submission
+
+            // Collect form data
+            var formData = {
+                'name': $('#name').val(),
+                'message': $('#message').val(),
+                'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
+            };
+
+            // Send AJAX POST request
+            $.ajax({
+                type: 'POST',
+                url: '/report/',  // Adjust the URL as needed
+                data: formData,
+                dataType: 'json',
+                success: function (data) {
+                    // Display success message
+                    $('#successMessage').text(data.success_message);
+                },
+                error: function (error) {
+                    console.log('Error:', error);
+                }
+            });
+        });
+    });
+</script>
+
+
+<script>
+    let isSpeechMode = false;  // Variable to track speech mode
+
+    document.addEventListener("DOMContentLoaded", function () {
+        var speechButton = document.getElementById('speechChatButton');
+        speechButton.addEventListener('click', startChatSpeechRecognition);
+
+        var sendButton = document.getElementById('send-btn');
+        sendButton.addEventListener('click', sendMessage);
+
+        var userInput = document.getElementById('user-input');
+        userInput.addEventListener('keypress', function (event) {
+            if (event.which === 13) {
+                sendMessage();
+            }
+        });
+    });
+
+    function startChatSpeechRecognition() {
+        isSpeechMode = !isSpeechMode;  // Toggle speech mode
+
+        const speechButton = document.getElementById('speechChatButton');
+        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+
+        if (isSpeechMode) {
+            speechButton.innerHTML = '<img src="{% static '/images/voice.png' %}" alt="Voice Icon" style="padding-bottom: 12px;padding-right: 10px;" class="w-10 h-10">';
+
+            recognition.onresult = function (event) {
+                const speechInputResult = event.results[0][0].transcript;
+                document.getElementById('user-input').value = speechInputResult;
+
+                // Trigger the sendMessage function after setting the speech input
+                sendMessage('speech');
+
+                // Reset the button text
+                speechButton.innerHTML = '<img src="{% static '/images/voice.png' %}" alt="Voice Icon" style="padding-bottom: 12px;padding-right: 10px;" class="w-10 h-10">';
+            };
+
+            recognition.onerror = function (event) {
+                console.error('Speech recognition error:', event.error);
+            };
+
+            recognition.onend = function () {
+                // Reset the button text when speech recognition ends
+                speechButton.innerHTML = '<img src="{% static '/images/voice.png' %}" alt="Voice Icon" style="padding-bottom: 12px;padding-right: 10px;" class="w-10 h-10">';
+
+                // Automatically activate speech recognition for the user input after 1 second
+                if (isSpeechMode) {
+                    setTimeout(function () {
+                        startChatSpeechRecognition();
+                    }, 1000);
+                }
+            };
+
+            recognition.start();
+        } else {
+            // Stop speech recognition if speech mode is turned off
+            recognition.stop();
+            speechButton.innerHTML = '<img src="{% static '/images/voice.png' %}" alt="Voice Icon" style="padding-bottom: 12px;padding-right: 10px;" class="w-10 h-10">';
+        }
+    }
+
+    function sendMessage(inputType) {
+        var user_input = $('#user-input').val();
+
+        // Check if the user input is not empty
+        if (user_input.trim() !== '') {
+            $('#user-input').val('');
+
+            var chatMessages = $('#chat-messages');
+
+            var timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            // Append user's message with timestamp immediately
+            chatMessages.append('<div class="chat-bubble me">' +
+                '<div class="message-content">' + user_input + '</div>' +
+                '<div class="message-timestamp">' + timestamp + '</div>' +
+                '</div>'
+            );
+
+            // Call the backend to handle the user input
+            $.ajax({
+                type: 'POST',
+                url: '/chat/',
+                data: { 'user_input': user_input },
+                success: function (response) {
+                    // Get the current timestamp without seconds
+                    var timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                    // Append assistant's response with timestamp after receiving it
+                    chatMessages.append('<div class="chat-bubble you">' +
+                        '<div class="message-content">' + response.assistant_reply + '</div>' +
+                        '<div class="message-timestamp">' + timestamp + '</div>' +
+                        '</div>'
+                    );
+
+                    // Check if the user input was in speech mode, then speak the response
+                    if (inputType === 'speech' || isSpeechMode) {
+                        speakResponse(response.assistant_reply, startChatSpeechRecognition);
+                    } else {
+                        // Scroll down to the bottom of the chat container
+                        chatMessages.scrollTop(chatMessages[0].scrollHeight);
+                    }
+                }
+            });
+        }
+    }
+
+    function speakResponse(responseText, callback) {
+        var utterance = new SpeechSynthesisUtterance(responseText);
+        utterance.onend = function () {
+            if (callback) {
+                callback();
+            }
+        };
+        speechSynthesis.speak(utterance);
+    }
+</script>
+
+
+
+
+<script src="https://ajax.cloudflare.com/cdn-cgi/scripts/7089c43e/cloudflare-static/rocket-loader.min.js" data-cf-settings="257be86a981729866f2fa61c-|49" defer=""></script>
+<!-- Time line Html Ends -->
+<!-- BEGIN GLOBAL MANDATORY SCRIPTS -->
+
+<script src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
+<script src="{% static 'js/popper.min.js' %}"></script>
+<script src="{% static 'js/bootstrap.min.js' %}"></script>
+<script src="{% static 'js/select2.min.js' %}"></script>
+ <script>
+        $(document).ready(function(){
+            $(".select2_el").select2({
+            });
+        });
+        </script>
+<script>
+    $(document).ready(function () {
+        //Toggle fullscreen
+        $(".chat-bot-icon").click(function (e) {
+            $(this).children('img').toggleClass('hide');
+            $(this).children('svg').toggleClass('animate');
+            $('.chat-screen').toggleClass('show-chat');
+        });
+        $('.chat-mail button').click(function () {
+            $('.chat-mail').addClass('hide');
+            $('.chat-body').removeClass('hide');
+            $('.chat-input').removeClass('hide');
+            $('.chat-header-option').removeClass('hide');
+        });
+        $('.end-chat').click(function () {
+            $('.chat-body').addClass('hide');
+            $('.chat-input').addClass('hide');
+            $('.chat-session-end').removeClass('hide');
+            $('.chat-header-option').addClass('hide');
+        });
+    });
+
+</script>
+
+
+
+
+    <!-- End block -->
+    <footer class="bg-white dark:bg-gray-800">
+        <div class="max-w-screen-xl p-4  mx-auto  md:p-8 lg:p-10">
+            
+            <hr class="my-6 border-gray-200 sm:mx-auto dark:border-gray-700 lg:my-8">
+            <div class="flex justify-between items-center">
+            <span class="text-gray-500 dark:text-gray-400">Aṣẹ-lori-ara @ 2023 MyAIFActChecker.</span>
+            <ul class="flex space-x-5">
+                <li>
+                    <a target="_blank" href="https://www.facebook.com/factcheckafrica?mibextid=zOiqff" class="text-gray-500 hover:text-gray-900 dark:hover:text-white dark:text-gray-400">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" clip-rule="evenodd" /></svg>
+                    </a>
+                </li>
+                <li>
+                    <a target="_blank" href="https://www.instagram.com/factcheck_africa?igsh=MzRlODBiNWFlZA" class="text-gray-500 hover:text-gray-900 dark:hover:text-white dark:text-gray-400">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.067.06 1.407.06 4.123v.08c0 2.643-.012 2.987-.06 4.043-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.067.048-1.407.06-4.123.06h-.08c-2.643 0-2.987-.012-4.043-.06-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.636-.416-1.363-.465-2.427-.047-1.024-.06-1.379-.06-3.808v-.63c0-2.43.013-2.784.06-3.808.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772A4.902 4.902 0 015.45 2.525c.636-.247 1.363-.416 2.427-.465C8.901 2.013 9.256 2 11.685 2h.63zm-.081 1.802h-.468c-2.456 0-2.784.011-3.807.058-.975.045-1.504.207-1.857.344-.467.182-.8.398-1.15.748-.35.35-.566.683-.748 1.15-.137.353-.3.882-.344 1.857-.047 1.023-.058 1.351-.058 3.807v.468c0 2.456.011 2.784.058 3.807.045.975.207 1.504.344 1.857.182.466.399.8.748 1.15.35.35.683.566 1.15.748.353.137.882.3 1.857.344 1.054.048 1.37.058 4.041.058h.08c2.597 0 2.917-.01 3.96-.058.976-.045 1.505-.207 1.858-.344.466-.182.8-.398 1.15-.748.35-.35.566-.683.748-1.15.137-.353.3-.882.344-1.857.048-1.055.058-1.37.058-4.041v-.08c0-2.597-.01-2.917-.058-3.96-.045-.976-.207-1.505-.344-1.858a3.097 3.097 0 00-.748-1.15 3.098 3.098 0 00-1.15-.748c-.353-.137-.882-.3-1.857-.344-1.023-.047-1.351-.058-3.807-.058zM12 6.865a5.135 5.135 0 110 10.27 5.135 5.135 0 010-10.27zm0 1.802a3.333 3.333 0 100 6.666 3.333 3.333 0 000-6.666zm5.338-3.205a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z" clip-rule="evenodd" /></svg>
+                    </a>
+                </li>
+                <li>
+                    <a target="_blank" href="https://x.com/factc_africa?s=11" class="text-gray-500 hover:text-gray-900 dark:hover:text-white dark:text-gray-400">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84" /></svg>
+                    </a>
+                </li>
+                <li>
+                    <a target="_blank" href="https://www.linkedin.com/company/factcheck-africa/" class="text-gray-500 hover:text-gray-900 dark:hover:text-white dark:text-gray-400">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M2 0C0.9 0 0 0.9 0 2v20c0 1.1 0.9 2 2 2h20c1.1 0 2-0.9 2-2V2c0-1.1-0.9-2-2-2H2zM7 18H4v-8h3v8zM5.5 8.9C4.7 8.9 4 8.2 4 7.4S4.7 5.9 5.5 5.9 7 6.6 7 7.4 6.3 8.9 5.5 8.9zM18 18h-3v-4c0-0.9-0.1-2-1.3-2-1.3 0-1.5 1-1.5 2v4H9v-8h2v1.1h0.1c0.3-0.6 1-1.2 2.1-1.2 1.5 0 2.6 1 2.6 3.1v6z"/>
+                        </svg>
+                    </a>
+                    
+
+                </li>
+            
+            </ul>
+            </div>
+        </div>
+    </footer>
+    <script src="https://unpkg.com/flowbite@1.4.1/dist/flowbite.js"></script>
+
+
+</body>
+</html>
