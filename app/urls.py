@@ -1,85 +1,274 @@
-# myapp/urls.py
-from django.urls import path
-from . import views
+from rest_framework import generics, viewsets, status, permissions
+from rest_framework.decorators import api_view, permission_classes, action
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from django.http import HttpResponse
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
+import csv
+import time
+import re
+import requests
+from langchain_groq import ChatGroq
+from langchain_openai import ChatOpenAI
+from langchain_community.utilities import GoogleSerperAPIWrapper
+from langchain_tavily import TavilySearch
+from langchain.schema import SystemMessage, HumanMessage
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
+import os
 
-from .views import (result_detail_hausa,result_detail_arabic,result_detail_french,result_detail_igbo,result_detail_swahili,result_detail_yoruba,fact1,index,hausa,igbo, yoruba,french,habout,hausa_result,yabout,
-                    iabout,fabout,ifactcheck,sabout,sfactcheck,swahili,fact,
-                    swahili_result,yfactcheck,ffactcheck,about, result,hausa_factcheck,
-                    hausa_result,preview,arabic,arabic_result,arabout,arafactcheck,
-                    reliable_sources,yoruba_result,igbo_result,french_result,internet_safety,
-                    # FactcheckAPI,FactCheckWithTavilyAPIView,
-                    # FactCheckAPIView,factcheck_webpage,combined_view,
-                    combine
-                    )
-from rest_framework import routers
+# Initialize components
+analyzer = SentimentIntensityAnalyzer()
 
-router = routers.DefaultRouter()
-
-from django.urls import include
+# Set environment variables (move these to settings.py or environment file)
+os.environ["OPENAI_API_KEY"] = 'your-openai-key-here'
+os.environ["TAVILY_API_KEY"] = 'your-tavily-key-here'
+os.environ['GROQ_API_KEY'] = "your-groq-key-here"
+os.environ["SERPER_API_KEY"] = "your-serper-key-here"
 
 
-urlpatterns = [
+class FactcheckViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for managing fact-check operations
+    """
+    queryset = Factcheck.objects.all().order_by('-created_at')
+    serializer_class = FactcheckSerializer
+    permission_classes = [permissions.AllowAny]
+    lookup_field = 'slug'
     
-    path('', index, name='index'),
-    path('router', include(router.urls)),
-    path('about/', about, name='about'),
-    # path('report/', report, name='report'),
-    path('fact/',fact, name="fact"),
-    path('fact1/',fact1, name="fact1"),
- 
-    path('preview/', preview, name='preview'),
-    path('result/', result, name='result'),
-    # path('process_input/', views.process_user_input, name='process_input'),
-    # path('factcheck-webpage/', factcheck_webpage, name='factcheck_webpage'),
-    # path('factcheck-assistant/', combined_view, name='factcheck_assistant'),
-    path('combine/', combine, name='combine'),
-    path('all-factchecks/', views.all_factchecks, name='all_factchecks'),
-    path('export-factchecks/', views.export_factchecks_csv, name='export_factchecks_csv'),
-
-
-   
-    path('reliable_sources/<str:user_query>/', reliable_sources, name='reliable_sources'),
-
-    path('hausa', hausa, name='hausa'),
-    path('hausa/factcheck',hausa_factcheck, name="hausa_factcheck"),
-    path('hausa/about', habout, name='habout'),
-    path('hausa/result/', hausa_result, name='hausa_result'),
-    path('hausa/result/<slug:slug>/', result_detail_hausa, name='result_detail_hausa'),
-   
-    path('yoruba', yoruba, name='yoruba'),
-    path('yoruba/factcheck', yfactcheck, name='yfactcheck'),
-    path('yoruba/about', yabout, name='yabout'),
-    path('yoruba/result', yoruba_result, name='yoruba_result'),
-    path('yoruba/result/<slug:slug>/', result_detail_yoruba, name='result_detail_yoruba'),
-
-    path('igbo', igbo, name='igbo'),
-    path('igbo/factcheck', ifactcheck, name='ifactcheck'),
-    path('igbo/about', iabout, name='iabout'),
-    path('igbo/result', igbo_result, name='igbo_result'),
-    path('igbo/result/<slug:slug>/', result_detail_igbo, name='result_detail_igbo'),
-
-
-    path('swahili', swahili, name='swahili'),
-    path('swahili/factcheck', sfactcheck, name='sfactcheck'),
-    path('swahili/about', sabout, name='sabout'),
-    path('swahili/result', swahili_result, name='swahili_result'),
-    path('swahili/result/<slug:slug>/', result_detail_swahili, name='result_detail_swahili'),
-
-    path('french', french, name='french'),
-    path('french/factcheck', ffactcheck, name='ffactcheck'),
-    path('french/about', fabout, name='fabout'),
-    path('french/result', french_result, name='french_result'),
-    path('french/result/<slug:slug>/', result_detail_french, name='result_detail_french'),
-
-    path('arabic', arabic, name='arabic'),
-    path('arabic/factcheck', arafactcheck, name='arabicfactcheck'),
-    path('arabic/about', arabout, name='arabicabout'),
-    path('arabic/result', arabic_result, name='arabic_result'),
-    path('arabic/result/<slug:slug>/', result_detail_arabic, name='result_detail_arabic'),
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return FactcheckCreateSerializer
+        return FactcheckSerializer
     
-    path('safety/', internet_safety, name='internet_safety'),    # path('api/factcheck/', FactcheckAPI.as_view(), name='factcheck_api'),
-    # path('api/factchecker/', FactCheckAPIView.as_view(), name='factchecker_api'),
-    # path('factcheckAPI/', FactCheckWithTavilyAPIView.as_view(), name='fact-check'),
-]
+    @action(detail=False, methods=['get'])
+    def export_csv(self, request):
+        """Export all factchecks as CSV"""
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="factchecks.csv"'
+        
+        writer = csv.writer(response)
+        writer.writerow([
+            'ID', 'User Input News', 'Fact Check Result', 'Sentiment Label', 
+            'Genuine URLs', 'Non-Authentic URLs', 'Number of Genuine Sources', 
+            'Genuine URLs and Dates', 'Non-Authentic Sources', 'Created At'
+        ])
+        
+        factchecks = self.get_queryset()
+        for factcheck in factchecks:
+            writer.writerow([
+                factcheck.id,
+                factcheck.user_input_news,
+                factcheck.fresult,
+                factcheck.sentiment_label,
+                factcheck.genuine_urls,
+                factcheck.non_authentic_urls,
+                factcheck.num_genuine_sources,
+                factcheck.genuine_urls_and_dates,
+                factcheck.non_authentic_sources,
+                factcheck.created_at
+            ])
+        
+        return response
 
-urlpatterns += router.urls
+
+class UserReportViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for user reports
+    """
+    queryset = UserReport.objects.all().order_by('-timestamp')
+    serializer_class = UserReportSerializer
+    permission_classes = [permissions.AllowAny]
+
+
+class ActiveUserViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    ViewSet for active users (read-only)
+    """
+    queryset = ActiveUser.objects.all()
+    serializer_class = ActiveUserSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+
+# Translation utility
+def llm_translate(text: str, target_lang: str) -> str:
+    """Translate text using LLM"""
+    if not text:
+        return text
+    try:
+        llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+        sys_msg = SystemMessage(content=(
+            "You are a professional translator. Translate the user text faithfully into the target language. "
+            "Do not add, remove, or embellish meaning. Keep names/URLs as-is. "
+            "If the input is already in the target language, return it unchanged. "
+            "Return only the translation—no explanations."
+        ))
+        usr_msg = HumanMessage(content=f"Target language: {target_lang}\n\nText:\n{text}")
+        out = llm.invoke([sys_msg, usr_msg])
+        return out.content.strip()
+    except Exception as e:
+        print(f"[LLM translate error] {e}")
+        return text
+
+
+def get_external_api_answer(query):
+    """Get fact-check answer using external APIs"""
+    # Initialize LLMs
+    llm_groq = ChatGroq(model="llama-3.1-8b-instant", temperature=0)
+    llm_openai = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+
+    # Initialize search tools
+    serper_tool = GoogleSerperAPIWrapper()
+    tavily_tool = TavilySearch()
+
+    # Run searches
+    try:
+        serper_data = serper_tool.results(query)
+    except Exception as e:
+        serper_data = {"error": str(e)}
+
+    try:
+        tavily_data = tavily_tool.invoke({"query": query})
+    except Exception as e:
+        tavily_data = {"error": str(e)}
+
+    # Extract URLs
+    sources = []
+    if "organic" in serper_data:
+        sources += [item.get("link") for item in serper_data["organic"] if "link" in item]
+    if "results" in tavily_data:
+        sources += [item.get("url") for item in tavily_data["results"] if "url" in item]
+
+    # Combine search content
+    serper_snippets = "\n\n".join(
+        f"- {item.get('title', '')}\n  {item.get('snippet', '')}"
+        for item in serper_data.get("organic", [])
+    )
+
+    tavily_snippets = "\n\n".join(
+        f"- {item.get('title', '')}\n  {item.get('content', '')}"
+        for item in tavily_data.get("results", [])
+    )
+
+    combined_context = f"{serper_snippets}\n\n{tavily_snippets}"
+
+    # System prompt for fact-checking
+    messages = [
+        SystemMessage(content="""You are a professional fact-checking assistant. 
+Verify the accuracy of the user's claim using the provided information. Respond in a clear, concise, and formal narrative. 
+Do not mention sources, websites, or search results. Avoid bullet points. Only state if the claim is true, false, misleading, or unverifiable and explain why based on the evidence. Do not speculate."""),
+        HumanMessage(content=f"{combined_context}\n\nUser Claim: {query}")
+    ]
+
+    # Try ChatGroq first, fallback to OpenAI
+    try:
+        response = llm_groq.invoke(messages)
+    except Exception as e:
+        print("[ChatGroq Failed] Switching to OpenAI:", e)
+        response = llm_openai.invoke(messages)
+
+    summary = response.content.strip()
+    return summary, sources
+
+
+class FactCheckAPIView(APIView):
+    """
+    Main API endpoint for fact-checking
+    """
+    permission_classes = [permissions.AllowAny]
+    
+    def post(self, request):
+        serializer = FactcheckCreateSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        user_query = serializer.validated_data['user_input_news']
+        
+        try:
+            # Get fact-check result
+            fact_check_result, sources = get_external_api_answer(user_query)
+            
+            # Perform sentiment analysis
+            sentiment_scores = analyzer.polarity_scores(user_query)
+            sentiment_label = "Neutral"
+            if sentiment_scores['compound'] > 0.05:
+                sentiment_label = "Positive"
+            elif sentiment_scores['compound'] < -0.05:
+                sentiment_label = "Negative"
+            
+            # Create factcheck record
+            factcheck = Factcheck.objects.create(
+                user_input_news=user_query,
+                fresult=fact_check_result,
+                sentiment_label=sentiment_label,
+                genuine_urls=sources,
+                num_genuine_sources=len(sources)
+            )
+            
+            response_serializer = FactcheckSerializer(factcheck)
+            return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+            
+        except Exception as e:
+            return Response(
+                {"error": f"An error occurred while processing the request: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class MultiLanguageFactCheckAPIView(APIView):
+    """
+    API endpoint for multi-language fact-checking
+    """
+    permission_classes = [permissions.AllowAny]
+    
+    def post(self, request):
+        user_query = request.data.get('user_input_news', '')
+        target_language = request.data.get('language', 'english').lower()
+        
+        if not user_query:
+            return Response(
+                {"error": "user_input_news is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            # If not English, translate to English first
+            if target_language != 'english':
+                query_en = llm_translate(user_query, target_lang="English")
+            else:
+                query_en = user_query
+            
+            # Get fact-check result in English
+            fact_check_result_en, sources = get_external_api_answer(query_en)
+            
+            # Translate result back to target language if needed
+            if target_language != 'english':
+                fact_check_result = llm_translate(fact_check_result_en, target_lang=target_language.title())
+            else:
+                fact_check_result = fact_check_result_en
+            
+            # Perform sentiment analysis
+            sentiment_scores = analyzer.polarity_scores(user_query)
+            sentiment_label = "Neutral"
+            if sentiment_scores['compound'] > 0.05:
+                sentiment_label = "Positive"
+            elif sentiment_scores['compound'] < -0.05:
+                sentiment_label = "Negative"
+            
+            # Create factcheck record
+            factcheck = Factcheck.objects.create(
+                user_input_news=user_query,
+                fresult=fact_check_result,
+                sentiment_label=sentiment_label,
+                genuine_urls=sources,
+                num_genuine_sources=len(sources)
+            )
+            
+            response_serializer = FactcheckSerializer(factcheck)
+            return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+            
+        except Exception as e:
+            return Response(
+                {"error": f"An error occurred while processing the request: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
