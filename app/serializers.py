@@ -1,48 +1,32 @@
 from rest_framework import serializers
-from .models import Factcheck, ActiveUser, UserReport
-from django.contrib.auth.models import User
-
-
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ['id', 'username', 'email', 'first_name', 'last_name']
-
+from .models import Factcheck
 
 class FactcheckSerializer(serializers.ModelSerializer):
     class Meta:
         model = Factcheck
-        fields = [
-            'id', 'user_input_news', 'fresult', 'gpt_check_result',
-            'sentiment_label', 'num_genuine_sources', 'non_authentic_sources',
-            'genuine_urls', 'non_authentic_urls', 'genuine_urls_and_dates',
-            'slug', 'created_at'
-        ]
-        read_only_fields = ['id', 'slug', 'created_at']
+        fields = '__all__'
 
 
-class FactcheckCreateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Factcheck
-        fields = ['user_input_news']
-        
-    def validate_user_input_news(self):
-        value = self.validated_data.get('user_input_news')
-        if not value or len(value.strip()) < 10:
-            raise serializers.ValidationError("Please provide a meaningful news statement to fact-check.")
-        return value
+# myapp/serializers.py
+from rest_framework import serializers
 
+class FactcheckRequestSerializer(serializers.Serializer):
+    query = serializers.CharField(max_length=1000)
 
-class ActiveUserSerializer(serializers.ModelSerializer):
-    user = UserSerializer(read_only=True)
-    
-    class Meta:
-        model = ActiveUser
-        fields = ['id', 'user', 'ip_address']
+class CitationSerializer(serializers.Serializer):
+    title = serializers.CharField()
+    url = serializers.URLField()
+    tier = serializers.CharField(required=False)
 
+class FactcheckResultJsonSerializer(serializers.Serializer):
+    verdict = serializers.CharField()
+    explanation = serializers.CharField()
+    citations = CitationSerializer(many=True, required=False)
+    confidence = serializers.FloatField(required=False)
 
-class UserReportSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = UserReport
-        fields = ['id', 'name', 'message', 'timestamp']
-        read_only_fields = ['id', 'timestamp']
+class FactcheckResponseSerializer(serializers.Serializer):
+    query = serializers.CharField()
+    result = serializers.CharField(required=False, allow_blank=True)
+    result_json = FactcheckResultJsonSerializer(required=False)
+    latency_ms = serializers.IntegerField()
+

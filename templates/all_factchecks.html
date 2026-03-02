@@ -1,0 +1,67 @@
+<!-- myapp/templates/all_factchecks.html -->
+ {% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Factchecks and Reports</title>
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+</head>
+<body>
+    <h1>All Factchecks</h1>
+    <a href="{% url 'export_factchecks_csv' %}" class="btn">Download Factchecks CSV</a>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>User Input News</th>
+                <th>Fact Check Result</th>
+                <th>Sentiment Label</th>
+                <th>Genuine URLs</th>
+                <th>Non-Authentic URLs</th>
+                <th>Number of Genuine Sources</th>
+                <th>Genuine URLs and Dates</th>
+                <th>Non-Authentic Sources</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for factcheck in factchecks %}
+            <tr>
+                <td>{{ factcheck.id }}</td>
+                <td>{{ factcheck.user_input_news }}</td>
+                <td>{{ factcheck.fresult }}</td>
+                <td>{{ factcheck.sentiment_label }}</td>
+                <td>{{ factcheck.genuine_urls }}</td>
+                <td>{{ factcheck.non_authentic_urls }}</td>
+                <td>{{ factcheck.num_genuine_sources }}</td>
+                <td>{{ factcheck.genuine_urls_and_dates }}</td>
+                <td>{{ factcheck.non_authentic_sources }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h1>All User Reports</h1>
+
+    <table border="1">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Message</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for report in user_reports %}
+            <tr>
+                <td>{{ report.id }}</td>
+                <td>{{ report.name }}</td>
+                <td>{{ report.message }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

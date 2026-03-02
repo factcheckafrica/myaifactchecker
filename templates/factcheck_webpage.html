@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fact-Check a Webpage</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+        header {
+            background: #0078d4;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 2em;
+        }
+        main {
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 8px;
+        }
+        input[type="url"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+        button {
+            background-color: #0078d4;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+        button:hover {
+            background-color: #005bb5;
+        }
+        h2 {
+            color: #0078d4;
+            margin-top: 20px;
+        }
+        pre {
+            background: #f8f8f8;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            overflow-y: auto; /* Enable vertical scrolling if needed */
+            overflow-x: hidden; /* Prevent horizontal scrolling */
+            width: 100%; /* Full width of parent */
+            max-height: 400px; /* Optional: Set a maximum height */
+            white-space: pre-wrap; /* Wrap text to fit within the width */
+            word-wrap: break-word; /* Break long words to fit within the width */
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Fact-Check a Webpage</h1>
+    </header>
+    <main>
+        <form method="post">
+            {% csrf_token %}
+            <label for="webpage_url">Enter the Webpage URL:</label>
+            <input type="url" id="webpage_url" name="webpage_url" placeholder="https://example.com" required>
+            <button type="submit">Fact-Check</button>
+        </form>
+
+        {% if error %}
+            <p class="error">{{ error }}</p>
+        {% endif %}
+
+        {% if result %}
+            <h2>Fact-Checking Results:</h2>
+            <pre>{{ result }}</pre>
+        {% endif %}
+    </main>
+</body>
+</html>
