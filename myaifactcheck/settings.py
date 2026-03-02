@@ -24,7 +24,8 @@ ALLOWED_HOSTS = ["myaifactchecker.org","www.myaifactchecker.org","myaifactcheck-
 # ALLOWED_HOSTS= ["*"]
 CSRF_TRUSTED_ORIGINS = [
     "https://myaifactchecker.org",
-    "https://www.myaifactchecker.org",  # if applicable
+    "https://www.myaifactchecker.org",
+    "http://127.0.0.1:8000/"  # if applicable
 ]
 
 
@@ -86,19 +87,28 @@ ASGI_APPLICATION = 'myaifactcheck.asgi.application'
 
 # Database
 
+CORS_ALLOW_ALL_ORIGINS = True
+# If you need credentials/cookies across origins, also:
+# CORS_ALLOW_CREDENTIALS = True
 
+# ---- SAFER (preferred) instead of allow-all:
+# CORS_ALLOWED_ORIGINS = [
+#     "http://127.0.0.1:5500",
+#     "http://localhost:5500",
+#     "http://127.0.0.1:8000",  # if your frontend is served from Django too
+# ]
 
-
-DATABASES = {
-'default': dj_database_url.config(default="postgresql://postgres:*-dG*2FEF6d3GEAG6-D4g42AgegDcGD-@roundhouse.proxy.rlwy.net:18228/railway", conn_max_age=1000)
-}
 
 # DATABASES = {
-#         "default": {
-#                 "ENGINE": "django.db.backends.sqlite3",
-#                 "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
-#             }
-#         }
+# 'default': dj_database_url.config(default="postgresql://postgres:*-dG*2FEF6d3GEAG6-D4g42AgegDcGD-@roundhouse.proxy.rlwy.net:18228/railway", conn_max_age=1000)
+# }
+
+DATABASES = {
+        "default": {
+                "ENGINE": "django.db.backends.sqlite3",
+                "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
+            }
+        }
 
 # CHANNEL_LAYERS = {
 #     'default': {
