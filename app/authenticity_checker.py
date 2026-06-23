@@ -10,7 +10,12 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from urllib.parse import urlparse
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
+from dotenv import load_dotenv
+
+load_dotenv()
+
 api_key = os.getenv("OPENAI_API_KEY", "")
+google_api_key = os.getenv("GOOGLE_API_KEY", "")
 nltk.download('vader_lexicon')
 nltk.download('stopwords')
 nltk.download('punkt')
@@ -100,7 +105,7 @@ def check_news_authenticity(query):
 def FactCheck(query):
     try:
         payload = {
-            'key': 'AIzaSyCg0hJErtkTLTWn90iw5GB49NTzkeCp-qk',
+            'key': google_api_key,
             'query': query
         }
         url = 'https://factchecktools.googleapis.com/v1alpha1/claims:search'
