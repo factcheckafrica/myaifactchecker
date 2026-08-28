@@ -13,9 +13,8 @@ from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from dotenv import load_dotenv
 
 load_dotenv()
-
-api_key = os.getenv("OPENAI_API_KEY", "")
-google_api_key = os.getenv("GOOGLE_API_KEY", "")
+api_key = os.getenv("OPENAI_API_KEY")
+google_api_key = os.getenv("GOOGLE_API_KEY")
 nltk.download('vader_lexicon')
 nltk.download('stopwords')
 nltk.download('punkt')

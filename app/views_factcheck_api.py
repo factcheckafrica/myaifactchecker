@@ -9,11 +9,11 @@ import os
 # Load environment variables FIRST
 load_dotenv()
 
-# Environment-based config (with inline fallbacks for Railway deployment)
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
-GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
-SERPER_API_KEY = os.getenv("SERPER_API_KEY", "")
-TAVILY_API_KEY = os.getenv("TAVILY_API_KEY", "")
+# Environment-based config
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+SERPER_API_KEY = os.getenv("SERPER_API_KEY")
+TAVILY_API_KEY = os.getenv("TAVILY_API_KEY")
 
 import re
 import time
@@ -110,12 +110,19 @@ def _get_greeting_response(text: str) -> str:
     return "Hello!"
 
 
-def _split_title_url(s: str):
-    """Input item is 'Title - URL' or just 'URL'."""
-    if " - " in s:
-        title, url = s.split(" - ", 1)
+def _split_title_url(s):
+    """Input item is 'Title - URL', just 'URL', or a {'title': ..., 'url': ...} dict."""
+    if isinstance(s, dict):
+        title = (s.get("title") or "").strip()
+        url = (s.get("url") or "").strip()
+        return title or "Source", url
+    if not s:
+        return "Source", ""
+    text = str(s).strip()
+    if " - " in text:
+        title, url = text.split(" - ", 1)
     else:
-        title, url = "Source", s
+        title, url = "Source", text
     return title.strip(), url.strip()
 
 
@@ -139,9 +146,13 @@ def _normalize_url(u: str) -> str:
             if "q" in q_params and q_params["q"]:
                 return _normalize_url(q_params["q"])
 
-        # 2) Parse and normalize domain
+        # 2) Parse and normalize domain (only strip leading www./m. subdomains)
         parsed = urlparse(u)
-        netloc = parsed.netloc.lower().replace("www.", "").replace("m.", "")
+        netloc = parsed.netloc.lower()
+        if netloc.startswith("www."):
+            netloc = netloc[4:]
+        if netloc.startswith("m."):
+            netloc = netloc[2:]
 
         # 3) Remove tracking / irrelevant params
         query = [

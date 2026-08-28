@@ -15,7 +15,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-w$fz1kz1#2o*a2p)az#wq1^nj4zyj(90az@5)4+i(2i@%7j%=("
+SECRET_KEY = os.environ["SECRET_KEY"]
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -99,16 +99,16 @@ CORS_ALLOW_ALL_ORIGINS = True
 # ]
 
 
-# DATABASES = {
-# 'default': dj_database_url.config(default="postgresql://postgres:*-dG*2FEF6d3GEAG6-D4g42AgegDcGD-@roundhouse.proxy.rlwy.net:18228/railway", conn_max_age=1000)
-# }
-
 DATABASES = {
         "default": {
                 "ENGINE": "django.db.backends.sqlite3",
                 "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
             }
         }
+
+DATABASE_URL = os.getenv("DATABASE_URL")
+if DATABASE_URL:
+    DATABASES["default"] = dj_database_url.parse(DATABASE_URL)
 
 # CHANNEL_LAYERS = {
 #     'default': {

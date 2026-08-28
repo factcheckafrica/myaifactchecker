@@ -1,0 +1,894 @@
+{% load static %}
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="IE=edge" http-equiv="X-UA-Compatible"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>Reverse Image Investigation | MyAIFactChecker</title>
+<meta content="Investigate where an image first appeared, how it has been reused, and whether it is being shared out of context." name="description"/>
+<link href="https://fonts.googleapis.com/css?family=Nunito:400,500,600,700,800" rel="stylesheet"/>
+<link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet"/>
+<link href="{% static 'css/main.css' %}" rel="stylesheet"/>
+<link href="{% static 'output.css' %}" rel="stylesheet"/>
+<link href="{% static 'w3.css' %}" rel="stylesheet"/>
+<style>
+    :root {
+      --teal: #0f8f87;
+      --teal-dark: #08756f;
+      --teal-soft: #e8f7f5;
+      --ink: #10172b;
+      --muted: #667085;
+      --line: #e6ebf1;
+      --surface: #ffffff;
+      --page: #f8fafc;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --success: #16a34a;
+      --shadow: 0 10px 28px rgba(15, 23, 42, .07);
+      --small-shadow: 0 5px 16px rgba(15, 23, 42, .06);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Nunito", sans-serif;
+      color: var(--ink);
+      background: var(--page);
+    }
+
+    .ri-header {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      background: rgba(255,255,255,.96);
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(12px);
+    }
+
+    .ri-nav {
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 14px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    .ri-brand img { height: 38px; width: auto; }
+    .ri-nav-links { display: flex; align-items: center; gap: 26px; }
+    .ri-nav-links a {
+      text-decoration: none;
+      color: #344054;
+      font-size: 14px;
+      font-weight: 700;
+    }
+    .ri-nav-links a:hover, .ri-nav-links a.active { color: var(--teal); }
+
+    .language-select {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 9px 12px;
+      color: #344054;
+      background: #fff;
+      font: inherit;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .ri-container {
+      width: min(1320px, calc(100% - 36px));
+      margin: 0 auto;
+    }
+
+    .hero {
+      min-height: 650px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.02fr) minmax(480px, .98fr);
+      align-items: center;
+      gap: 44px;
+      padding: 70px 0 58px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 9px 14px;
+      border-radius: 999px;
+      background: var(--teal-soft);
+      color: var(--teal-dark);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+
+    .hero h1 {
+      max-width: 680px;
+      margin: 25px 0 22px;
+      font-size: clamp(42px, 5.8vw, 76px);
+      line-height: .98;
+      letter-spacing: -.045em;
+      font-weight: 800;
+    }
+
+    .hero h1 span { color: var(--teal); }
+    .hero-copy {
+      max-width: 650px;
+      font-size: 18px;
+      line-height: 1.7;
+      color: #475467;
+      margin-bottom: 20px;
+    }
+
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin: 30px 0 28px;
+    }
+
+    .primary-btn, .secondary-btn {
+      min-height: 48px;
+      border-radius: 10px;
+      padding: 0 21px;
+      border: 1px solid transparent;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .primary-btn {
+      background: linear-gradient(135deg, var(--teal), var(--teal-dark));
+      color: #fff;
+      box-shadow: 0 8px 18px rgba(15,143,135,.2);
+    }
+    .primary-btn:hover { color: #fff; transform: translateY(-1px); }
+    .secondary-btn { background: #fff; color: var(--teal-dark); border-color: #cbd5e1; }
+
+    .feature-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px 28px;
+      max-width: 650px;
+    }
+    .feature-item { display: flex; gap: 10px; align-items: center; color: #475467; font-weight: 700; font-size: 14px; }
+    .feature-check {
+      width: 20px; height: 20px; border-radius: 50%;
+      display: grid; place-items: center; color: #fff; background: var(--teal);
+      font-size: 12px; flex: none;
+    }
+
+    .hero-visual {
+      position: relative;
+      min-height: 520px;
+      border-radius: 30px;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 66% 36%, rgba(15,143,135,.17), transparent 30%),
+        linear-gradient(145deg, #f9fbfd 20%, #edf7f6 100%);
+      border: 1px solid #edf2f7;
+    }
+
+    .lens-figure {
+      position: absolute;
+      right: 4%;
+      bottom: 2%;
+      width: 70%;
+      height: 82%;
+      border-radius: 50% 50% 18px 18px;
+      background: linear-gradient(145deg, #f6f7f9, #cfd6dc);
+      box-shadow: 0 25px 40px rgba(15,23,42,.16);
+    }
+    .lens-figure::before {
+      content: "";
+      position: absolute;
+      top: 7%;
+      left: 14%;
+      width: 76%;
+      height: 35%;
+      border-radius: 24px 70px 70px 24px;
+      background: linear-gradient(90deg,#111827,#475569 45%,#0f172a);
+      transform: rotate(-4deg);
+      box-shadow: inset -18px 0 0 rgba(255,255,255,.15);
+    }
+    .lens-figure::after {
+      content: "";
+      position: absolute;
+      top: 12%;
+      left: 2%;
+      width: 38%;
+      aspect-ratio: 1;
+      border: 22px solid #263241;
+      border-radius: 50%;
+      background: radial-gradient(circle, #0b1220 26%, #1f3042 27% 42%, #0a111d 43%);
+      box-shadow: 0 9px 20px rgba(15,23,42,.25);
+    }
+
+    .floating-card {
+      position: absolute;
+      background: rgba(255,255,255,.97);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      border-radius: 14px;
+      padding: 16px;
+      z-index: 3;
+    }
+    .floating-card small { color: var(--muted); font-weight: 800; text-transform: uppercase; font-size: 10px; }
+    .floating-card strong { display: block; margin-top: 6px; font-size: 18px; }
+    .first-card { top: 8%; left: 4%; width: 280px; }
+    .found-card { top: 40%; left: 0; width: 155px; }
+    .risk-card { bottom: 18%; left: 4%; width: 170px; }
+    .verdict-card { bottom: 5%; left: 24%; width: 210px; }
+
+    .upload-section { padding: 26px 0 70px; }
+    .section-heading { text-align: center; max-width: 720px; margin: 0 auto 28px; }
+    .section-heading h2 { font-weight: 800; font-size: 34px; margin-bottom: 10px; }
+    .section-heading p { color: var(--muted); font-size: 16px; }
+
+    .upload-card {
+      max-width: 880px;
+      margin: 0 auto;
+      padding: 24px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .drop-zone {
+      min-height: 300px;
+      border: 2px dashed #b8d9d6;
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 32px;
+      background: linear-gradient(180deg, #fbfefe, #f4fbfa);
+      cursor: pointer;
+      transition: .2s ease;
+    }
+    .drop-zone.dragover { border-color: var(--teal); background: #ebf8f6; }
+    .drop-icon {
+      width: 70px; height: 70px; border-radius: 18px;
+      display: grid; place-items: center;
+      color: var(--teal); background: var(--teal-soft); font-size: 34px;
+      margin: 0 auto 15px;
+    }
+    .drop-zone h3 { font-size: 22px; font-weight: 800; margin-bottom: 7px; }
+    .drop-zone p { color: var(--muted); margin-bottom: 16px; }
+    .file-meta { color: #98a2b3; font-size: 12px; margin-top: 12px; }
+
+    .preview-wrap {
+      display: none;
+      margin-top: 18px;
+      grid-template-columns: 180px 1fr auto;
+      gap: 18px;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+    }
+    .preview-wrap.show { display: grid; }
+    .preview-wrap img { width: 180px; height: 115px; object-fit: cover; border-radius: 10px; }
+    .preview-name { font-weight: 800; margin-bottom: 5px; }
+    .preview-size { color: var(--muted); font-size: 13px; }
+
+    .results-page { display: none; padding: 26px 0 65px; }
+    .results-page.show { display: block; }
+    .toolbar {
+      display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 18px;
+    }
+    .back-btn { color: var(--teal-dark); border: 0; background: none; font-weight: 800; cursor: pointer; }
+    .toolbar-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 340px minmax(0, 1fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .panel {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: var(--small-shadow);
+    }
+    .panel-body { padding: 18px; }
+    .panel-title { font-size: 16px; font-weight: 800; margin: 0 0 16px; }
+
+    .investigated-image { width: 100%; aspect-ratio: 1.2; object-fit: cover; border-radius: 12px; background: #eef2f6; }
+    .image-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+
+    .metric-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; }
+    .metric {
+      min-height: 132px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .metric-label { color: var(--muted); font-size: 11px; text-transform: uppercase; font-weight: 800; }
+    .metric-value { font-size: 18px; font-weight: 800; margin: 7px 0 3px; }
+    .metric-sub { color: var(--muted); font-size: 12px; }
+
+    .content-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 18px; }
+    .timeline { position: relative; padding-left: 25px; }
+    .timeline::before { content:""; position:absolute; left:7px; top:3px; bottom:3px; width:2px; background:#b9dedb; }
+    .timeline-item { position: relative; padding: 0 0 18px; }
+    .timeline-item::before {
+      content:""; position:absolute; left:-23px; top:4px; width:12px; height:12px; border-radius:50%;
+      border: 3px solid var(--teal); background:#fff;
+    }
+    .timeline-date { color: var(--teal); font-size: 11px; font-weight: 800; }
+    .timeline-title { font-size: 14px; font-weight: 800; margin: 2px 0; }
+    .timeline-text { color: var(--muted); font-size: 12px; }
+
+    .detail-table { width: 100%; border-collapse: collapse; }
+    .detail-table td { padding: 8px 0; border-bottom: 1px solid #f1f3f6; font-size: 13px; }
+    .detail-table td:first-child { color: var(--muted); width: 38%; }
+    .source-list { display: grid; gap: 10px; }
+    .source-row { display: grid; grid-template-columns: 1fr 110px 90px; gap: 10px; align-items: center; padding: 11px 0; border-bottom: 1px solid #f1f3f6; font-size: 13px; }
+    .source-row:last-child { border-bottom: 0; }
+
+    .analysis-callout {
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 9px;
+      font-size: 13px;
+      border: 1px solid;
+    }
+    .callout-green { background:#f0fdf4; border-color:#bbf7d0; color:#166534; }
+    .callout-orange { background:#fff7ed; border-color:#fed7aa; color:#9a3412; }
+    .callout-red { background:#fef2f2; border-color:#fecaca; color:#991b1b; }
+
+    .confidence-bar { height: 8px; border-radius: 999px; background:#e8eef2; overflow:hidden; margin-top: 8px; }
+    .confidence-fill { width: 94%; height: 100%; background: var(--success); }
+
+    .feedback-tab {
+      position: fixed;
+      right: 0;
+      top: 42%;
+      z-index: 25;
+      background: var(--teal);
+      color: #fff;
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+      padding: 15px 10px;
+      border-radius: 9px 0 0 9px;
+      font-weight: 800;
+      font-size: 13px;
+      text-decoration: none;
+    }
+
+    .ri-footer {
+      background: #fff;
+      border-top: 1px solid var(--line);
+      padding: 24px 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .footer-row { display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+
+    @media (max-width: 1050px) {
+      .hero { grid-template-columns: 1fr; padding-top: 55px; }
+      .hero-visual { min-height: 500px; }
+      .dashboard-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 760px) {
+      .ri-nav-links { display: none; }
+      .hero h1 { font-size: 48px; }
+      .feature-list, .metric-grid, .content-grid { grid-template-columns: 1fr; }
+      .hero-visual { min-height: 430px; }
+      .first-card { width: 220px; }
+      .preview-wrap { grid-template-columns: 1fr; }
+      .preview-wrap img { width:100%; height:200px; }
+      .source-row { grid-template-columns: 1fr; }
+      .image-actions { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 480px) {
+      .ri-container { width: min(100% - 22px, 1320px); }
+      .ri-nav { padding: 12px; }
+      .ri-brand img { height: 30px; }
+      .language-select { max-width: 105px; }
+      .hero h1 { font-size: 40px; }
+      .hero-copy { font-size: 16px; }
+      .hero-visual { min-height: 380px; }
+      .lens-figure { width:78%; }
+      .found-card, .risk-card { display:none; }
+      .verdict-card { left: 5%; width: 190px; }
+      .upload-card { padding: 13px; }
+    }
+  
+body { padding-top: 64px; }
+header.fixed { z-index: 1000; }
+.ri-main-content { min-height: 100vh; }
+@media (max-width: 768px) { body { padding-top: 58px; } }
+</style>
+<link href="{% static 'css/select2.min.css' %}" rel="stylesheet" type="text/css"/><link href="{% static 'css/chatBot.css' %}" rel="stylesheet" type="text/css"/><link href="{% static 'css/timeline.css' %}" rel="stylesheet" type="text/css"/></head>
+<body>
+<header class="fixed w-full">
+<nav class="bg-white border-gray-200 py-2.5 dark:bg-gray-900">
+<div class="flex flex-wrap items-center justify-between max-w-screen-xl px-4 mx-auto">
+<a class="flex items-center" href="/">
+<img alt="Landwind Logo" class="h-6 mr-3 sm:h-9" src=" {% static '/images/Factcheck_Elections.png' %}"/>
+</a>
+<div class="flex items-center lg:order-2">
+<div class="w3-dropdown-hover hidden-mobile hidden-low-res-tablet hidden-tablet-portrait">
+<button class="w3-button w3-teal text-white bg-purple-700 hover:bg-purple-800 focus:ring-4 focus:ring-purple-300 font-medium rounded-lg text-sm px-4 lg:px-5 py-2 lg:py-2.5 sm:mr-2 lg:mr-0 dark:bg-purple-600 dark:hover:bg-purple-700 focus:outline-none dark:focus:ring-purple-800">Language</button>
+<div class="w3-dropdown-content w3-bar-block w3-border">
+<a class="w3-bar-item w3-button" href="/hausa">Hausa</a>
+<a class="w3-bar-item w3-button" href="/yoruba">Yoruba</a>
+<a class="w3-bar-item w3-button" href="/igbo">Igbo</a>
+<a class="w3-bar-item w3-button" href="/french">French</a>
+<a class="w3-bar-item w3-button" href="/swahili">Swahili</a>
+<a class="w3-bar-item w3-button" href="/arabic">Arabic</a>
+<a class="w3-bar-item w3-button" href="/">English</a>
+</div>
+</div>
+<button aria-controls="mobile-menu-2" aria-expanded="false" class="inline-flex items-center p-2 ml-1 text-sm text-gray-500 rounded-lg lg:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600" data-collapse-toggle="mobile-menu-2" type="button">
+<span class="sr-only">Open main menu</span>
+<svg class="w-6 h-6" fill="currentColor" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path clip-rule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" fill-rule="evenodd"></path></svg>
+<svg class="hidden w-6 h-6" fill="currentColor" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path clip-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" fill-rule="evenodd"></path></svg>
+</button>
+</div>
+<div class="items-center justify-between hidden w-full lg:flex lg:w-auto lg:order-1" id="mobile-menu-2">
+<ul class="flex flex-col mt-4 font-medium lg:flex-row lg:space-x-8 lg:mt-0">
+<!-- Existing menu items -->
+<li>
+<a class="block py-2 pl-3 pr-4 text-gray-700 border-b border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-purple-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700" href="/">Home</a>
+</li>
+<li>
+<a class="block py-2 pl-3 pr-4 text-gray-700 border-b border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-purple-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700" href="/about">About</a>
+</li>
+<li>
+<a class="block py-2 pl-3 pr-4 text-gray-700 border-b border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-purple-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700" href="#c1">Contact</a>
+</li>
+<li>
+<a class="block py-2 pl-3 pr-4 text-gray-700 border-b border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-purple-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700" href="/safety">Internet Safety</a>
+</li>
+<li>
+<a class="block py-2 pl-3 pr-4 text-gray-700 border-b border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-purple-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700" href="#how">How to Use</a>
+</li>
+<li class="hidden-large-screen hidden-laptop-desktop">
+<!-- Dropdown menu item -->
+<div class="w3-dropdown-hover">
+<button class="w3-button text-white bg-purple-700 hover:bg-purple-800 focus:ring-4 focus:ring-purple-300 font-medium rounded-lg text-sm px-4 lg:px-5 py-2 lg:py-2.5 sm:mr-2 lg:mr-0 dark:bg-purple-600 dark:hover:bg-purple-700 focus:outline-none dark:focus:ring-purple-800">Language</button>
+<div class="w3-dropdown-content w3-bar-block w3-border">
+<a class="w3-bar-item w3-button" href="/hausa">Hausa</a>
+<a class="w3-bar-item w3-button" href="/yoruba">Yoruba</a>
+<a class="w3-bar-item w3-button" href="/igbo">Igbo</a>
+<a class="w3-bar-item w3-button" href="/french">French</a>
+<a class="w3-bar-item w3-button" href="/swahili">Swahili</a>
+<a class="w3-bar-item w3-button" href="/arabic">Arabic</a>
+<a class="w3-bar-item w3-button" href="/">English</a>
+</div>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</nav>
+</header>
+<a class="feedback-tab" href="#feedback">Feedback</a>
+<main class="ri-main-content">
+<section id="landingView">
+<div class="ri-container hero">
+<div>
+<div class="eyebrow">▣ AI Image Investigation</div>
+<h1>AI <span>Reverse Image</span><br/>Investigation</h1>
+<p class="hero-copy">
+          Discover where an image first appeared, how it has been used across the internet,
+          and whether it is being shared out of context.
+        </p>
+<p class="hero-copy">
+          MyAIFactChecker combines reverse-image search with AI analysis to deliver a clear,
+          evidence-led investigation you can understand and trust.
+        </p>
+<div class="hero-actions">
+<button class="primary-btn" onclick="scrollToUploader()" type="button">☁ Upload Image &amp; Investigate</button>
+<a class="secondary-btn" href="#how-it-works">How It Works</a>
+</div>
+<div class="feature-list">
+<div class="feature-item"><span class="feature-check">✓</span>Find first appearance</div>
+<div class="feature-item"><span class="feature-check">✓</span>AI context explanation</div>
+<div class="feature-item"><span class="feature-check">✓</span>Track image history</div>
+<div class="feature-item"><span class="feature-check">✓</span>Manipulation indicators</div>
+<div class="feature-item"><span class="feature-check">✓</span>See where it is used</div>
+<div class="feature-item"><span class="feature-check">✓</span>Misinformation risk score</div>
+<div class="feature-item"><span class="feature-check">✓</span>News and media coverage</div>
+<div class="feature-item"><span class="feature-check">✓</span>Download investigation report</div>
+</div>
+</div>
+<div aria-label="Reverse image investigation illustration" class="hero-visual">
+<div class="floating-card first-card">
+<small>First appearance</small>
+<strong>12 March 2021</strong>
+<span style="color:var(--teal);font-weight:800;font-size:13px;">Reuters</span>
+</div>
+<div class="floating-card found-card">
+<small>Found on</small>
+<strong>382</strong>
+<span style="color:var(--muted);font-size:13px;">Websites</span>
+</div>
+<div class="floating-card risk-card">
+<small>Risk level</small>
+<strong style="color:var(--warning)">Medium</strong>
+<span style="color:var(--muted);font-size:12px;">Context mismatch</span>
+</div>
+<div class="floating-card verdict-card">
+<small>AI verdict</small>
+<strong style="color:var(--teal)">✓ Authentic</strong>
+<span style="color:var(--muted);font-size:12px;">But context is misleading</span>
+</div>
+<div class="lens-figure"></div>
+</div>
+</div>
+<section class="upload-section" id="uploader">
+<div class="ri-container">
+<div class="section-heading">
+<h2>Investigate an image</h2>
+<p>Upload a JPG, PNG, WEBP or GIF file. The frontend below uses placeholder results until your backend is connected.</p>
+</div>
+<div class="upload-card">
+<input accept="image/png,image/jpeg,image/webp,image/gif" hidden="" id="imageInput" type="file"/>
+<div aria-label="Upload image" class="drop-zone" id="dropZone" role="button" tabindex="0">
+<div>
+<div class="drop-icon">▣</div>
+<h3>Drop your image here</h3>
+<p>or choose a file from your device</p>
+<button class="primary-btn" onclick="document.getElementById('imageInput').click()" type="button">Choose Image</button>
+<div class="file-meta">Maximum file size: 10 MB</div>
+</div>
+</div>
+<div class="preview-wrap" id="previewWrap">
+<img alt="Selected image preview" id="previewImage"/>
+<div>
+<div class="preview-name" id="previewName">Selected image</div>
+<div class="preview-size" id="previewSize"></div>
+</div>
+<button class="primary-btn" id="investigateBtn" type="button">Investigate Image</button>
+</div>
+</div>
+</div>
+</section>
+<section class="upload-section" id="how-it-works">
+<div class="ri-container">
+<div class="section-heading">
+<h2>How the investigation works</h2>
+<p>The final backend can combine reverse-image search results, metadata checks, similarity scoring and AI-generated context analysis.</p>
+</div>
+<div class="metric-grid">
+<div class="panel panel-body"><div class="metric-label">Step 1</div><div class="metric-value">Upload</div><div class="metric-sub">The user provides an image for investigation.</div></div>
+<div class="panel panel-body"><div class="metric-label">Step 2</div><div class="metric-value">Search &amp; Compare</div><div class="metric-sub">The backend finds matching and visually similar images.</div></div>
+<div class="panel panel-body"><div class="metric-label">Step 3</div><div class="metric-value">Explain</div><div class="metric-sub">AI summarizes the original context, later uses and risks.</div></div>
+</div>
+</div>
+</section>
+</section>
+<section class="results-page" id="resultsView">
+<div class="ri-container">
+<div class="toolbar">
+<button class="back-btn" onclick="showLanding()" type="button">← Back to Reverse Image</button>
+<div class="toolbar-actions">
+<button class="secondary-btn" onclick="showLanding()" type="button">⌕ New Search</button>
+<button class="secondary-btn" onclick="window.print()" type="button">⇩ Download Report</button>
+<button class="secondary-btn" onclick="shareReport()" type="button">↗ Share</button>
+</div>
+</div>
+<div class="dashboard-grid">
+<aside class="panel">
+<div class="panel-body">
+<img alt="Investigated image" class="investigated-image" id="resultImage"/>
+<div class="image-actions">
+<a class="secondary-btn" href="#" id="viewOriginalBtn" target="_blank">View Original</a>
+<button class="secondary-btn" onclick="downloadCurrentImage()" type="button">Download Image</button>
+</div>
+<button class="primary-btn" onclick="showLanding()" style="width:100%;margin-top:12px;" type="button">▣ Verify Another Image</button>
+</div>
+</aside>
+<section>
+<div class="panel">
+<div class="panel-body">
+<h2 class="panel-title">Investigation Overview</h2>
+<div class="metric-grid">
+<div class="metric">
+<div class="metric-label">AI Verdict</div>
+<div class="metric-value" style="color:var(--warning)">Context Missing</div>
+<div class="metric-sub">Image appears authentic</div>
+</div>
+<div class="metric">
+<div class="metric-label">Confidence Score</div>
+<div class="metric-value">94%</div>
+<div class="confidence-bar"><div class="confidence-fill"></div></div>
+</div>
+<div class="metric">
+<div class="metric-label">Risk Level</div>
+<div class="metric-value" style="color:var(--warning)">Medium</div>
+<div class="metric-sub">Context mismatch</div>
+</div>
+<div class="metric">
+<div class="metric-label">First Appearance</div>
+<div class="metric-value">12 Mar 2021</div>
+<div class="metric-sub">Reuters</div>
+</div>
+<div class="metric">
+<div class="metric-label">Found On</div>
+<div class="metric-value">382</div>
+<div class="metric-sub">Websites</div>
+</div>
+<div class="metric">
+<div class="metric-label">Potential Misuse</div>
+<div class="metric-value" style="color:var(--danger)">High</div>
+<div class="metric-sub">Risk detected</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+<div class="content-grid">
+<section class="panel panel-body">
+<h2 class="panel-title">Image Timeline</h2>
+<div class="timeline">
+<div class="timeline-item"><div class="timeline-date">12 Mar 2021</div><div class="timeline-title">Reuters publishes image</div><div class="timeline-text">Article: Floods devastate western Europe</div></div>
+<div class="timeline-item"><div class="timeline-date">13 Mar 2021</div><div class="timeline-title">BBC News republishes</div><div class="timeline-text">Used in news coverage</div></div>
+<div class="timeline-item"><div class="timeline-date">14 Mar 2021</div><div class="timeline-title">Image used by AFP</div><div class="timeline-text">Photojournalism coverage</div></div>
+<div class="timeline-item"><div class="timeline-date">27 Aug 2024</div><div class="timeline-title">Shared on Facebook</div><div class="timeline-text">Viral post with no context</div></div>
+<div class="timeline-item"><div class="timeline-date">16 May 2026</div><div class="timeline-title">Shared with false claim</div><div class="timeline-text">Claimed to show flooding in Nigeria</div></div>
+</div>
+</section>
+<section class="panel panel-body">
+<h2 class="panel-title">First Appearance Details</h2>
+<table class="detail-table">
+<tr><td>Website</td><td><strong>Reuters</strong></td></tr>
+<tr><td>Published</td><td>12 March 2021</td></tr>
+<tr><td>Author</td><td>John Smith</td></tr>
+<tr><td>Location</td><td>Germany</td></tr>
+<tr><td>Article</td><td>Floods devastate western Europe</td></tr>
+<tr><td>Image ID</td><td>RTX8X73</td></tr>
+<tr><td>Confidence</td><td><strong>98%</strong></td></tr>
+</table>
+</section>
+<section class="panel panel-body">
+<h2 class="panel-title">Where It Has Been Used</h2>
+<div class="source-list">
+<div class="source-row"><strong>Reuters</strong><span>12 Mar 2021</span><span>News</span></div>
+<div class="source-row"><strong>BBC News</strong><span>13 Mar 2021</span><span>News</span></div>
+<div class="source-row"><strong>AFP News</strong><span>14 Mar 2021</span><span>News</span></div>
+<div class="source-row"><strong>Facebook</strong><span>27 Aug 2024</span><span>Social</span></div>
+<div class="source-row"><strong>Blogspot</strong><span>16 May 2026</span><span>Blog</span></div>
+</div>
+</section>
+<section class="panel panel-body">
+<h2 class="panel-title">Similar Images</h2>
+<div class="source-list">
+<div class="source-row"><strong>Reuters match</strong><span>12 Mar 2021</span><span style="color:var(--success);font-weight:800">98%</span></div>
+<div class="source-row"><strong>BBC News match</strong><span>13 Mar 2021</span><span style="color:var(--success);font-weight:800">96%</span></div>
+<div class="source-row"><strong>AFP News match</strong><span>14 Mar 2021</span><span style="color:var(--success);font-weight:800">95%</span></div>
+</div>
+</section>
+<section class="panel panel-body">
+<h2 class="panel-title">AI Context Analysis</h2>
+<div class="analysis-callout callout-green"><strong>Possible original context:</strong><br/>Flooding in Germany (2021)</div>
+<div class="analysis-callout callout-orange"><strong>Likely current claim:</strong><br/>Flooding in Nigeria (2026)</div>
+<div class="analysis-callout callout-orange"><strong>Assessment:</strong><br/>Context mismatch detected</div>
+<div class="analysis-callout callout-red"><strong>Risk level:</strong><br/>High potential for misleading use</div>
+</section>
+<section class="panel panel-body">
+<h2 class="panel-title">AI Manipulation Detection</h2>
+<table class="detail-table">
+<tr><td>Image authenticity</td><td style="color:var(--success);font-weight:800">Authentic</td></tr>
+<tr><td>Manipulation score</td><td>7%</td></tr>
+<tr><td>AI-generated probability</td><td>2%</td></tr>
+<tr><td>Metadata tampering</td><td style="color:var(--success);font-weight:800">None detected</td></tr>
+</table>
+</section>
+<section class="panel panel-body">
+<h2 class="panel-title">Evidence Sources</h2>
+<div class="metric-grid">
+<div class="metric"><div class="metric-value">Google Lens</div><div class="metric-sub">Reverse image search</div></div>
+<div class="metric"><div class="metric-value">Reuters</div><div class="metric-sub">Original publisher</div></div>
+<div class="metric"><div class="metric-value">BBC</div><div class="metric-sub">Secondary use</div></div>
+<div class="metric"><div class="metric-value">TinEye</div><div class="metric-sub">Similarity evidence</div></div>
+<div class="metric"><div class="metric-value">AFP</div><div class="metric-sub">News coverage</div></div>
+<div class="metric"><div class="metric-value">FactCheck</div><div class="metric-sub">Related claims</div></div>
+</div>
+</section>
+<section class="panel panel-body">
+<h2 class="panel-title">AI Explanation</h2>
+<p style="color:#344054;line-height:1.72;font-size:14px;">
+            This image first appeared on Reuters on 12 March 2021 in an article about severe flooding in western Germany.
+            It was later republished by other news organisations and shared widely online. The image itself appears authentic,
+            but its current use is misleading because it has been recirculated with a claim that it shows flooding in Nigeria.
+          </p>
+<p style="font-weight:800;margin-top:12px;">Conclusion: authentic image, misleading context.</p>
+</section>
+</div>
+</div>
+</section>
+</main>
+<footer class="bg-white dark:bg-gray-800">
+<div class="max-w-screen-xl p-4 mx-auto md:p-8 lg:p-10">
+<hr class="my-6 border-gray-200 sm:mx-auto dark:border-gray-700 lg:my-8"/>
+<div class="flex justify-between items-center">
+<span class="text-gray-500 dark:text-gray-400">Copyright @ 2023 MyAIFactChecker. <a class="text-gray-500 hover:text-gray-900 dark:hover:text-white underline" href="{% url 'privacy_policy' %}">Privacy Policy</a></span>
+<ul class="flex space-x-5">
+<li>
+<a class="text-gray-500 hover:text-gray-900 dark:hover:text-white dark:text-gray-400" href="https://www.facebook.com/factcheckafrica?mibextid=zOiqff" target="_blank">
+<svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewbox="0 0 24 24"><path clip-rule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" fill-rule="evenodd"></path></svg>
+</a>
+</li>
+<li>
+<a class="text-gray-500 hover:text-gray-900 dark:hover:text-white dark:text-gray-400" href="https://www.instagram.com/factcheck_africa?igsh=MzRlODBiNWFlZA" target="_blank">
+<svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewbox="0 0 24 24"><path clip-rule="evenodd" d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.067.06 1.407.06 4.123v.08c0 2.643-.012 2.987-.06 4.043-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.067.048-1.407.06-4.123.06h-.08c-2.643 0-2.987-.012-4.043-.06-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.636-.416-1.363-.465-2.427-.047-1.024-.06-1.379-.06-3.808v-.63c0-2.43.013-2.784.06-3.808.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772A4.902 4.902 0 015.45 2.525c.636-.247 1.363-.416 2.427-.465C8.901 2.013 9.256 2 11.685 2h.63zm-.081 1.802h-.468c-2.456 0-2.784.011-3.807.058-.975.045-1.504.207-1.857.344-.467.182-.8.398-1.15.748-.35.35-.566.683-.748 1.15-.137.353-.3.882-.344 1.857-.047 1.023-.058 1.351-.058 3.807v.468c0 2.456.011 2.784.058 3.807.045.975.207 1.504.344 1.857.182.466.399.8.748 1.15.35.35.683.566 1.15.748.353.137.882.3 1.857.344 1.054.048 1.37.058 4.041.058h.08c2.597 0 2.917-.01 3.96-.058.976-.045 1.505-.207 1.858-.344.466-.182.8-.398 1.15-.748.35-.35.566-.683.748-1.15.137-.353.3-.882.344-1.857.048-1.055.058-1.37.058-4.041v-.08c0-2.597-.01-2.917-.058-3.96-.045-.976-.207-1.505-.344-1.858a3.097 3.097 0 00-.748-1.15 3.098 3.098 0 00-1.15-.748c-.353-.137-.882-.3-1.857-.344-1.023-.047-1.351-.058-3.807-.058zM12 6.865a5.135 5.135 0 110 10.27 5.135 5.135 0 010-10.27zm0 1.802a3.333 3.333 0 100 6.666 3.333 3.333 0 000-6.666zm5.338-3.205a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z" fill-rule="evenodd"></path></svg>
+</a>
+</li>
+<li>
+<a class="text-gray-500 hover:text-gray-900 dark:hover:text-white dark:text-gray-400" href="https://x.com/factc_africa?s=11" target="_blank">
+<svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewbox="0 0 24 24"><path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84"></path></svg>
+</a>
+</li>
+<li>
+<a class="text-gray-500 hover:text-gray-900 dark:hover:text-white dark:text-gray-400" href="https://www.linkedin.com/company/factcheck-africa/" target="_blank">
+<svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewbox="0 0 24 24">
+<path d="M2 0C0.9 0 0 0.9 0 2v20c0 1.1 0.9 2 2 2h20c1.1 0 2-0.9 2-2V2c0-1.1-0.9-2-2-2H2zM7 18H4v-8h3v8zM5.5 8.9C4.7 8.9 4 8.2 4 7.4S4.7 5.9 5.5 5.9 7 6.6 7 7.4 6.3 8.9 5.5 8.9zM18 18h-3v-4c0-0.9-0.1-2-1.3-2-1.3 0-1.5 1-1.5 2v4H9v-8h2v1.1h0.1c0.3-0.6 1-1.2 2.1-1.2 1.5 0 2.6 1 2.6 3.1v6z"></path>
+</svg>
+</a>
+</li>
+</ul>
+</div>
+</div>
+</footer>
+<script>
+  const imageInput = document.getElementById("imageInput");
+  const dropZone = document.getElementById("dropZone");
+  const previewWrap = document.getElementById("previewWrap");
+  const previewImage = document.getElementById("previewImage");
+  const previewName = document.getElementById("previewName");
+  const previewSize = document.getElementById("previewSize");
+  const investigateBtn = document.getElementById("investigateBtn");
+  const landingView = document.getElementById("landingView");
+  const resultsView = document.getElementById("resultsView");
+  const resultImage = document.getElementById("resultImage");
+  const viewOriginalBtn = document.getElementById("viewOriginalBtn");
+  let selectedFile = null;
+  let selectedImageUrl = "";
+
+  function scrollToUploader() {
+    document.getElementById("uploader").scrollIntoView({ behavior: "smooth" });
+  }
+
+  function validateAndPreview(file) {
+    if (!file) return;
+    const accepted = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+    if (!accepted.includes(file.type)) {
+      alert("Please select a JPG, PNG, WEBP or GIF image.");
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      alert("The selected image is larger than 10 MB.");
+      return;
+    }
+
+    selectedFile = file;
+    if (selectedImageUrl) URL.revokeObjectURL(selectedImageUrl);
+    selectedImageUrl = URL.createObjectURL(file);
+
+    previewImage.src = selectedImageUrl;
+    previewName.textContent = file.name;
+    previewSize.textContent = (file.size / 1024 / 1024).toFixed(2) + " MB";
+    previewWrap.classList.add("show");
+  }
+
+  imageInput.addEventListener("change", function () {
+    validateAndPreview(this.files[0]);
+  });
+
+  ["dragenter", "dragover"].forEach(eventName => {
+    dropZone.addEventListener(eventName, event => {
+      event.preventDefault();
+      dropZone.classList.add("dragover");
+    });
+  });
+
+  ["dragleave", "drop"].forEach(eventName => {
+    dropZone.addEventListener(eventName, event => {
+      event.preventDefault();
+      dropZone.classList.remove("dragover");
+    });
+  });
+
+  dropZone.addEventListener("drop", event => validateAndPreview(event.dataTransfer.files[0]));
+  dropZone.addEventListener("click", event => {
+    if (event.target.tagName !== "BUTTON") imageInput.click();
+  });
+  dropZone.addEventListener("keydown", event => {
+    if (event.key === "Enter" || event.key === " ") imageInput.click();
+  });
+
+  investigateBtn.addEventListener("click", async function () {
+    if (!selectedFile) return;
+
+    /*
+      BACKEND CONNECTION POINT:
+      Replace the mock transition below with a request such as:
+
+      const formData = new FormData();
+      formData.append("image", selectedFile);
+
+      const response = await fetch("/api/reverse-image/investigate/", {
+        method: "POST",
+        headers: { "X-CSRFToken": getCookie("csrftoken") },
+        body: formData
+      });
+
+      const data = await response.json();
+      renderResults(data);
+    */
+
+    investigateBtn.disabled = true;
+    investigateBtn.textContent = "Investigating...";
+    await new Promise(resolve => setTimeout(resolve, 900));
+
+    resultImage.src = selectedImageUrl;
+    viewOriginalBtn.href = selectedImageUrl;
+    landingView.style.display = "none";
+    resultsView.classList.add("show");
+    investigateBtn.disabled = false;
+    investigateBtn.textContent = "Investigate Image";
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+
+  function showLanding() {
+    resultsView.classList.remove("show");
+    landingView.style.display = "block";
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function downloadCurrentImage() {
+    if (!selectedImageUrl) return;
+    const link = document.createElement("a");
+    link.href = selectedImageUrl;
+    link.download = selectedFile ? selectedFile.name : "investigated-image";
+    link.click();
+  }
+
+  async function shareReport() {
+    const shareData = {
+      title: "MyAIFactChecker Reverse Image Investigation",
+      text: "View this reverse image investigation result.",
+      url: window.location.href
+    };
+    if (navigator.share) {
+      try { await navigator.share(shareData); } catch (error) {}
+    } else {
+      await navigator.clipboard.writeText(window.location.href);
+      alert("Report link copied.");
+    }
+  }
+</script>
+
+<script src="https://unpkg.com/flowbite@1.4.1/dist/flowbite.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
+<script src="{% static 'js/popper.min.js' %}"></script>
+<script src="{% static 'js/bootstrap.min.js' %}"></script>
+<script src="{% static 'js/select2.min.js' %}"></script>
+<script>$(document).ready(function(){ $(".select2_el").select2({}); });</script>
+</body>
+</html>

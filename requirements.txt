@@ -62,3 +62,4 @@ langchain_community
 django-autoslug
 langchain_groq
 langchain_tavily
+google-search-results

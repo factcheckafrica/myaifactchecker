@@ -10,7 +10,7 @@ import time
 import csv
 import re
 
-# LLM / search/
+# LLM / search
 from langchain_groq import ChatGroq
 from langchain_openai import ChatOpenAI
 from langchain_community.utilities import GoogleSerperAPIWrapper
@@ -55,17 +55,17 @@ from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 # ... rest of your imports
 # ===========================
-# Environment-based config (with inline fallbacks for Railway deployment)
+# Environment-based config
 # ===========================
 
-OPENAI_API_KEY     = os.getenv("OPENAI_API_KEY", "")
-TAVILY_API_KEY     = os.getenv("TAVILY_API_KEY", "")
-SERPER_API_KEY     = os.getenv("SERPER_API_KEY", "")
-SERPAPI_API_KEY    = os.getenv("SERPAPI_API_KEY", "")
-GROQ_API_KEY       = os.getenv("GROQ_API_KEY", "")
+OPENAI_API_KEY     = os.getenv("OPENAI_API_KEY")
+TAVILY_API_KEY     = os.getenv("TAVILY_API_KEY")
+SERPER_API_KEY     = os.getenv("SERPER_API_KEY")
+SERPAPI_API_KEY    = os.getenv("SERPAPI_API_KEY")
+GROQ_API_KEY       = os.getenv("GROQ_API_KEY")
+GOOGLE_API_KEY     = os.getenv("GOOGLE_API_KEY")
 OPENAI_MODEL_NAME  = os.getenv("OPENAI_MODEL_NAME", "gpt-4o-mini")
-GOOGLE_API_KEY     = os.getenv("GOOGLE_API_KEY", "")
-IMGBB_API_KEY      = os.getenv("IMGBB_API_KEY", "")
+IMGBB_API_KEY      = os.getenv("IMGBB_API_KEY")
 
 # ✅ Create aliases for backward compatibility
 SERPAPI_KEY = SERPAPI_API_KEY or SERPER_API_KEY  # Try both
@@ -88,11 +88,9 @@ def validate_api_keys():
     
     for name, value in required.items():
         if not value or len(value) < 10:
-            print(f"❌ {name}: MISSING or TOO SHORT")
+            print(f"[MISSING] {name}: MISSING or TOO SHORT")
         else:
-            # Show first 10 and last 4 chars for security
-            masked = f"{value[:10]}...{value[-4:]}"
-            print(f"✅ {name}: {masked} ({len(value)} chars)")
+            print(f"[OK] {name}: configured")
     
     print("="*50 + "\n")
 
@@ -221,6 +219,7 @@ def index(request):      return render(request, 'index.html')
 def preview(request):    return render(request, "preview.html")
 def about(request):      return render(request, 'about.html')
 def fact(request):       return render(request, 'factcheck.html')
+def privacy_policy(request): return render(request, 'privacy_policy.html')
 
 # Hausa/Yoruba/Swahili/Igbo/French/Arabic pages
 def hausa(request):               return render(request, 'hausa_index.html')
@@ -351,7 +350,7 @@ def get_external_api_answer(query):
             title = (item.get("title") or "").strip()
             url = (item.get("link") or "").strip()
             if title and url:
-                sources.append(f"{title} - {url}")
+                sources.append({"title": title, "url": url})
                 print(f"[DEBUG] Added Serper source: {title[:50]}...")
 
     for item in tavily_results[:3]:
@@ -359,7 +358,7 @@ def get_external_api_answer(query):
             title = (item.get("title") or "").strip()
             url = (item.get("url") or "").strip()
             if title and url:
-                sources.append(f"{title} - {url}")
+                sources.append({"title": title, "url": url})
                 print(f"[DEBUG] Added Tavily source: {title[:50]}...")
 
     print(f"[DEBUG] Total sources collected: {len(sources)}")
